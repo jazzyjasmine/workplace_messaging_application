@@ -13,6 +13,8 @@ async function pageLoadClassify(push_history = true) {
             await preLoadChannelPage(push_history, paths[2])
         } else if (paths[1] === "create") {
             await loadCreateChannel(push_history);
+        } else if (paths[1] === "message" && Number.isInteger(Number(paths[2]))) {
+            await loadReplyPage(push_history);
         } else {
             await loadHomePage(push_history);
         }
@@ -27,6 +29,7 @@ function loadAuth(push_history = true, channel_id = null) {
     document.querySelector(".auth").style.display = "block";
     document.querySelector(".clip").style.display = "none";
     document.querySelector(".channel_header").style.display = "none";
+    document.querySelector(".reply").style.display = "none";
 
     let submit_auth_button = document.querySelector('#submit_auth');
     submit_auth_button.addEventListener('click', async function (push_history) {
@@ -98,6 +101,7 @@ async function loadCreateChannel(push_history = true) {
         document.querySelector(".clip").style.display = "none";
         document.querySelector(".channel_header").style.display = "none";
         document.querySelector(".create_channel").style.display = "block";
+        document.querySelector(".reply").style.display = "none";
 
         // create channel button
         let create_channel_button = document.querySelector("#create_channel");
@@ -206,7 +210,7 @@ async function preLoadChannelPage(push_history, channel_id) {
         })
     }
 
-    let response = await fetch('/api/channel_preauthentication', fetchRedirectPage);
+    let response = await fetch('/api/channel/authentication', fetchRedirectPage);
     let response_data = await response.json();
     let authentication_result = response_data["result"];
 
@@ -233,6 +237,7 @@ async function loadChannelPage(push_history, channel_id) {
         document.querySelector(".auth").style.display = "none";
         document.querySelector(".create_channel").style.display = "none";
         document.querySelector(".messages").innerHTML = "";
+        document.querySelector(".reply").style.display = "none";
 
         let post_button = document.querySelector("#post");
         post_button.addEventListener('click', async function () {
@@ -241,7 +246,7 @@ async function loadChannelPage(push_history, channel_id) {
 
         console.log("finish loading channel page " + channel_id);
 
-        await startMessagePolling();
+        await channelPolling();
     } catch (error) {
         console.log('Load channel page failed.', error);
     }
@@ -290,45 +295,12 @@ async function postMessage() {
             })
         }
 
-        await fetch('/api/channel', fetchRedirectPage);
-
-        // if (response_data["result"] === "invalid_account") {
-        //     alert("invalid account!");
-        //     return false;
-        // }
+        await fetch('/api/channel/message', fetchRedirectPage);
 
     } catch (error) {
         console.log('Post Message Failed', error);
     }
 }
-
-
-function displayMessages(all_messages) {
-    // display all messages on the web page
-    let container = document.querySelector(".messages");
-    container.innerHTML = "";
-    for (let i = 0; i < all_messages.length; i++) {
-        container.appendChild(buildOneMessage(all_messages[i]))
-    }
-}
-
-
-function buildOneMessage(message) {
-    // build one message tag
-    let curr_message = document.createElement("message");
-    let curr_author = document.createElement("author");
-    let curr_content = document.createElement("content");
-    let curr_reply_entrance = document.createElement('a');
-    curr_author.innerHTML = message["username"];
-    curr_content.innerHTML = message["message_content"];
-    curr_reply_entrance.href = "http://127.0.0.1:5000/message/" + message["message_id"];
-    curr_reply_entrance.innerHTML = "reply";
-    curr_message.appendChild(curr_author);
-    curr_message.appendChild(curr_content);
-    curr_message.appendChild(curr_reply_entrance);
-    return curr_message;
-}
-
 
 async function getMessages() {
     try {
@@ -337,15 +309,17 @@ async function getMessages() {
             return;
         }
         let channel_id = paths[2];
+
         console.log("getMessage: " + channel_id);
         let fetchRedirectPage = {
             method: 'GET',
             headers: new Headers({
+                'get_type': "message",
                 'channel_id': channel_id
             })
         }
 
-        let response = await fetch("/api/channel", fetchRedirectPage);
+        let response = await fetch("/api/channel/message", fetchRedirectPage);
         let response_data = await response.json();
 
         // if no message, do nothing
@@ -354,22 +328,98 @@ async function getMessages() {
         }
 
         // otherwise, display all the messages
-        displayMessages(response_data);
+        function buildOneMessage(message) {
+            // build one message tag
+            let curr_message = document.createElement("message");
+            let curr_author = document.createElement("author");
+            let curr_content = document.createElement("content");
+            let curr_reply_entrance = document.createElement('a');
+            curr_author.innerHTML = message["username"];
+            curr_content.innerHTML = message["message_content"];
+            curr_reply_entrance.href = "http://127.0.0.1:5000/message/" + message["message_id"];
+            curr_reply_entrance.innerHTML = "reply";
+            curr_message.appendChild(curr_author);
+            curr_message.appendChild(curr_content);
+            curr_message.appendChild(curr_reply_entrance);
+            curr_message.id = "message_" + message["message_id"];
+            return curr_message;
+        }
+
+        let container = document.querySelector(".messages");
+        container.innerHTML = "";
+        for (let i = 0; i < response_data.length; i++) {
+            container.appendChild(buildOneMessage(response_data[i]))
+        }
 
     } catch (error) {
         console.log('Get message request Failed', error);
     }
 }
 
-async function startMessagePolling() {
-    // continuously get messages without blocking the user
-    await getMessages();
-    await delay(1500);
-    await startMessagePolling();
+async function getReplyCount() {
+    try {
+        // get channel id from url
+        let paths = window.location.pathname.split("/");
+        if (paths[1] !== "channel" || !Number.isInteger(Number(paths[2]))) {
+            return;
+        }
+        let channel_id = paths[2];
+
+        // if no message, return
+        if (document.querySelector(".messages").children.length === 0) {
+            return;
+        }
+
+        let fetchRedirectPage = {
+            method: 'GET',
+            headers: new Headers({
+                'get_type': "reply count",
+                'channel_id': channel_id
+            })
+        }
+
+        let response = await fetch("/api/channel/reply", fetchRedirectPage);
+        let response_data = await response.json();
+
+        for (let i = 0; i < response_data.length; i++) {
+            if (response_data[i]["reply_count"] === "0" || response_data[i]["reply_count"] === 0) {
+                continue;
+            }
+            let message_id = response_data[i]["message_id"];
+            let reply_count = response_data[i]["reply_count"];
+            let curr_message_container = document.getElementById("message_" + message_id);
+            let curr_reply_count = document.createElement("replyCount");
+            curr_reply_count.innerHTML = reply_count + " replies";
+            curr_message_container.appendChild(curr_reply_count);
+        }
+
+    } catch (error) {
+        console.log('Get repy count request Failed', error);
+    }
 }
 
+async function channelPolling() {
+    // continuously get messages without blocking the user
+    await getMessages();
+    await getReplyCount();
+    await delay(1500);
+    await channelPolling();
+}
 
 async function delay(ms) {
   // return await for better async stack trace support in case of errors.
   return await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function loadReplyPage(push_history=true) {
+    document.querySelector(".clip").style.display = "none";
+    document.querySelector(".channel_header").style.display = "none";
+    document.querySelector(".auth").style.display = "none";
+    document.querySelector(".create_channel").style.display = "none";
+    document.querySelector(".messages").style.display = "none";
+    document.querySelector(".reply").style.display = "block";
+
+    // display the message to be replied
+
+
 }

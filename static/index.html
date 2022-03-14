@@ -11,7 +11,7 @@
 <body>
 
 <div class="channel_header">
-    <h2><a href="/create">Belay</a></h2>
+    <h2><a href="/">Belay</a></h2>
 </div>
 
 <div class="container">
@@ -47,9 +47,18 @@
                         <button id="post" type="submit" value="Post">Post</button>
                     </div>
                 </div>
-                <div class="messages">
-                </div>
+                <div class="messages"></div>
             </div>
+        </div>
+    </div>
+
+    <div class="reply">
+        <div id="currMessage"></div>
+        <div id="replies"></div>
+        <div class="replyInput">
+            <label for="reply_content"></label><input id="reply_content" name="reply_content" />
+            <br>
+            <button id="reply_submit" type="submit" value="Reply">Reply</button>
         </div>
     </div>
 

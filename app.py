@@ -10,7 +10,8 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 @app.route('/auth')
 @app.route('/create')
 @app.route('/channel/<int:channel_id>')
-def index(channel_id=None):
+@app.route('/message/<int:message_id>')
+def index(channel_id=None, message_id=None):
     return app.send_static_file('index.html')
 
 
@@ -106,7 +107,7 @@ def get_channels():
     return [str(channel[0]) for channel in data], [channel[1] for channel in data]
 
 
-@app.route('/api/channel_preauthentication', methods=['POST'])
+@app.route('/api/channel/authentication', methods=['POST'])
 def authenticate():
     username = request.headers["username"]
     auth_key = request.headers["auth_key"]
@@ -123,7 +124,7 @@ def authenticate():
         return jsonify({"result": "need auth"})
 
 
-@app.route('/api/channel', methods=['GET', 'POST'])
+@app.route('/api/channel/message', methods=['GET', 'POST'])
 def handle_request():
     if request.method == 'GET':
         channel_id = request.headers["channel_id"]
@@ -158,6 +159,23 @@ def handle_request():
     g.db.commit()
     cur.close()
     return "success"
+
+
+@app.route('/api/channel/reply', methods=['GET'])
+def get_reply_count():
+    channel_id = request.headers["channel_id"]
+    g.db = connect_db()
+    cur = g.db.execute(
+        "select message.message_id, count(reply_id) from message left join reply on reply.message_id = message.message_id where channel_id = ? group by message.message_id",
+        [channel_id]
+    )
+    data = cur.fetchall()
+    cur.close()
+    message_to_reply_counts = []
+    for message_id, reply_count in data:
+        message_to_reply_counts.append({"message_id": message_id,
+                                        "reply_count": reply_count})
+    return jsonify(message_to_reply_counts)
 
 
 def connect_db():
