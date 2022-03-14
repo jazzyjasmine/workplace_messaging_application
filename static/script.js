@@ -1,5 +1,6 @@
 window.addEventListener("load", pageLoadClassify);
 window.addEventListener("popstate", (newState) => {
+    console.log("back!");
     pageLoadClassify(false).then(r => {
     })
 });
@@ -8,10 +9,10 @@ async function pageLoadClassify(push_history = true) {
     try {
         let paths = window.location.pathname.split("/");
         // /channel/<int:channel_id>
-        if (paths[1] === "channel" && paths.length === 3 && Number.isInteger(Number(paths[2])) && Number(paths[2]) > 0) {
-            const queryString = window.location.search;
-            // let possible_magic_key = new URLSearchParams(queryString).get("magic_key");
+        if (paths[1] === "channel" && Number.isInteger(Number(paths[2]))) {
             await preLoadChannelPage(push_history, paths[2])
+        } else if (paths[1] === "create") {
+            await loadCreateChannel(push_history);
         } else {
             await loadHomePage(push_history);
         }
@@ -33,7 +34,7 @@ function loadAuth(push_history = true, channel_id = null) {
     });
 
     if (push_history) {
-        history.pushState({"page": "auth"}, null, 'auth');
+        history.pushState({"page": "auth"}, null, '/auth');
     }
 }
 
@@ -89,29 +90,29 @@ async function auth(push_history, channel_id) {
 
 async function loadCreateChannel(push_history = true) {
     try {
+        if (push_history) {
+            history.pushState({"page": "create"}, null, '/create');
+        }
+
         document.querySelector(".auth").style.display = "none";
         document.querySelector(".clip").style.display = "none";
         document.querySelector(".channel_header").style.display = "none";
         document.querySelector(".create_channel").style.display = "block";
 
+        // create channel button
         let create_channel_button = document.querySelector("#create_channel");
         create_channel_button.addEventListener('click', async function (push_history) {
             let new_channel_name = document.querySelector("#channel_name").value;
-            document.querySelector("#channel_name").value = '';
             if (isEmpty(new_channel_name)) {
-                alert("Channel name can not be empty!");
+                // alert("Channel name can not be empty!");
                 return false;
             }
+            document.querySelector("#channel_name").value = "";
             await createChannel(push_history, new_channel_name);
         });
 
-        let fetchRedirectPage = {
-            method: 'GET',
-            headers: new Headers({
-                'Content-Type': 'application/json',
-                'username': getUsername()
-            })
-        }
+        // get all channels
+        let fetchRedirectPage = {method: 'GET'}
 
         const response = await fetch('/api/createchannel', fetchRedirectPage);
         let response_data = await response.json();
@@ -120,20 +121,17 @@ async function loadCreateChannel(push_history = true) {
             return;
         }
 
-        let channel_ids = response_data["channel_ids"].split(",")
+        let channel_ids = response_data["channel_ids"].split(",");
+        let channel_names = response_data["channel_names"].split(",");
         let container = document.querySelector("#existed_channel_rooms");
         container.style.display = "block";
-        container.innerHTML = "Existed channel rooms:<br>";
+        container.innerHTML = "Existed channels:<br>";
         for (let i = 0; i < channel_ids.length; i++) {
             let a = document.createElement('a');
             a.href = "http://127.0.0.1:5000/channel/" + channel_ids[i];
-            a.innerHTML = "Channel " + channel_ids[i];
+            a.innerHTML = channel_names[i];
             container.appendChild(a);
             container.appendChild(document.createElement('br'));
-        }
-
-        if (push_history) {
-            history.pushState({"page": "create"}, null, 'create');
         }
     } catch (error) {
         console.log('Load create channel page failed.', error);
@@ -142,6 +140,7 @@ async function loadCreateChannel(push_history = true) {
 
 async function createChannel(push_history, new_channel_name) {
     try {
+        console.log("createChannel: " + new_channel_name);
         let fetchRedirectPage = {
             method: 'POST',
             headers: new Headers({
@@ -156,7 +155,6 @@ async function createChannel(push_history, new_channel_name) {
             alert("Channel name already exists!");
             return false;
         }
-
         await loadChannelPage(push_history, response_data['channel_id'])
 
     } catch (error) {
@@ -202,21 +200,19 @@ async function preLoadChannelPage(push_history, channel_id) {
     let fetchRedirectPage = {
         method: 'POST',
         headers: new Headers({
-            'post_type': 'authentication',
             'channel_id': channel_id,
             'auth_key': getAuthKey(),
             'username': getUsername()
         })
     }
 
-    let response = await fetch('/api/channel', fetchRedirectPage);
+    let response = await fetch('/api/channel_preauthentication', fetchRedirectPage);
     let response_data = await response.json();
-    let authentication = response_data["authentication"];
+    let authentication_result = response_data["result"];
 
-    if (authentication === "success") {
+    if (authentication_result === "success") {
         await loadChannelPage(push_history, channel_id);
-    } else if (authentication === "pending") {
-        console.log("need to auth");
+    } else if (authentication_result === "need auth") {
         loadAuth(push_history, channel_id);
     } else {
         await loadHomePage(push_history);
@@ -226,6 +222,7 @@ async function preLoadChannelPage(push_history, channel_id) {
 
 async function loadChannelPage(push_history, channel_id) {
     try {
+        console.log("loadChannelPage: " + channel_id);
         if (push_history) {
             let url = '/channel/' + channel_id;
             history.pushState({"page": "channel"}, null, url);
@@ -235,37 +232,20 @@ async function loadChannelPage(push_history, channel_id) {
         document.querySelector(".channel_header").style.display = "block";
         document.querySelector(".auth").style.display = "none";
         document.querySelector(".create_channel").style.display = "none";
-        // document.getElementById("invite_link").innerHTML = await getMagicLink(chat_id);
+        document.querySelector(".messages").innerHTML = "";
 
         let post_button = document.querySelector("#post");
         post_button.addEventListener('click', async function () {
-            await postMessage(channel_id);
+            await postMessage();
         });
 
-        await startMessagePolling(channel_id);
+        console.log("finish loading channel page " + channel_id);
+
+        await startMessagePolling();
     } catch (error) {
         console.log('Load channel page failed.', error);
     }
 }
-
-
-// async function getMagicLink(chat_id) {
-//     try {
-//         let fetchRedirectPage = {
-//             method: 'POST',
-//             headers: new Headers({
-//                 'post_type': 'getMagicLink',
-//                 'chat_id': chat_id
-//             })
-//         }
-//
-//         let response = await fetch('/api/chat', fetchRedirectPage);
-//         let response_data = await response.json();
-//         return response_data["magic_link"];
-//     } catch (error) {
-//         console.log('Get magic link failed.', error);
-//     }
-// }
 
 
 function getAuthKey() {
@@ -278,38 +258,44 @@ function getUsername() {
 }
 
 
-async function postMessage(channel_id) {
+async function postMessage() {
     try {
+        let paths = window.location.pathname.split("/");
+        if (paths[1] !== "channel" || !Number.isInteger(Number(paths[2]))) {
+            return;
+        }
+
+        let channel_id = paths[2];
+
         // get message
-        let curr_message = document.querySelector("#post_content").value;
-        // set the input box blank
-        document.querySelector("#post_content").value = "";
+        let curr_message = document.querySelector("#post_content").value
+        console.log(channel_id + "is posting message: " + curr_message);
 
         // check if the input message is empty
         if (isEmpty(curr_message)) {
-            alert("Message can not be empty!");
+            // alert("Message can not be empty!");
             return false;
         }
+
+        // set the input box blank
+        document.querySelector("#post_content").value = "";
 
         // send new message and the related info to the server
         let fetchRedirectPage = {
             method: 'POST',
             headers: new Headers({
-                'post_type': 'postMessage',
-                'auth_key': getAuthKey(),
                 'channel_id': channel_id,
                 'username': getUsername(),
-                'message_body': curr_message
+                'message_content': curr_message
             })
         }
 
-        let response = await fetch('/api/channel', fetchRedirectPage);
-        let response_data = await response.json();
+        await fetch('/api/channel', fetchRedirectPage);
 
-        if (response_data["result"] === "invalid_account") {
-            alert("invalid account!");
-            return false;
-        }
+        // if (response_data["result"] === "invalid_account") {
+        //     alert("invalid account!");
+        //     return false;
+        // }
 
     } catch (error) {
         console.log('Post Message Failed', error);
@@ -332,16 +318,26 @@ function buildOneMessage(message) {
     let curr_message = document.createElement("message");
     let curr_author = document.createElement("author");
     let curr_content = document.createElement("content");
+    let curr_reply_entrance = document.createElement('a');
     curr_author.innerHTML = message["username"];
-    curr_content.innerHTML = message["message_body"];
+    curr_content.innerHTML = message["message_content"];
+    curr_reply_entrance.href = "http://127.0.0.1:5000/message/" + message["message_id"];
+    curr_reply_entrance.innerHTML = "reply";
     curr_message.appendChild(curr_author);
     curr_message.appendChild(curr_content);
+    curr_message.appendChild(curr_reply_entrance);
     return curr_message;
 }
 
 
-async function getMessages(channel_id) {
+async function getMessages() {
     try {
+        let paths = window.location.pathname.split("/");
+        if (paths[1] !== "channel" || !Number.isInteger(Number(paths[2]))) {
+            return;
+        }
+        let channel_id = paths[2];
+        console.log("getMessage: " + channel_id);
         let fetchRedirectPage = {
             method: 'GET',
             headers: new Headers({
@@ -365,8 +361,15 @@ async function getMessages(channel_id) {
     }
 }
 
-async function startMessagePolling(channel_id) {
+async function startMessagePolling() {
     // continuously get messages without blocking the user
-    await getMessages(channel_id);
-    await startMessagePolling(channel_id);
+    await getMessages();
+    await delay(1500);
+    await startMessagePolling();
+}
+
+
+async function delay(ms) {
+  // return await for better async stack trace support in case of errors.
+  return await new Promise(resolve => setTimeout(resolve, ms));
 }
