@@ -247,6 +247,7 @@ async function loadChannelPage(push_history, channel_id) {
         console.log("finish loading channel page " + channel_id);
 
         await channelPolling();
+
     } catch (error) {
         console.log('Load channel page failed.', error);
     }
@@ -314,7 +315,6 @@ async function getMessages() {
         let fetchRedirectPage = {
             method: 'GET',
             headers: new Headers({
-                'get_type': "message",
                 'channel_id': channel_id
             })
         }
@@ -373,7 +373,6 @@ async function getReplyCount() {
         let fetchRedirectPage = {
             method: 'GET',
             headers: new Headers({
-                'get_type': "reply count",
                 'channel_id': channel_id
             })
         }
@@ -412,6 +411,11 @@ async function delay(ms) {
 }
 
 async function loadReplyPage(push_history=true) {
+    if (push_history) {
+            let url = '/message/' + window.location.pathname.split("/")[2];
+            history.pushState({"page": "message"}, null, url);
+        }
+
     document.querySelector(".clip").style.display = "none";
     document.querySelector(".channel_header").style.display = "none";
     document.querySelector(".auth").style.display = "none";
@@ -419,7 +423,121 @@ async function loadReplyPage(push_history=true) {
     document.querySelector(".messages").style.display = "none";
     document.querySelector(".reply").style.display = "block";
 
-    // display the message to be replied
+    // click listener for posting reply
+    let post_button = document.querySelector("#reply_submit");
+    post_button.addEventListener('click', async function () {
+        await postReply();
+    });
 
+    await replyPolling();
 
+}
+
+async function postReply() {
+    try {
+        let paths = window.location.pathname.split("/");
+        if (paths[1] !== "message" || !Number.isInteger(Number(paths[2]))) {
+            return;
+        }
+
+        let message_id = paths[2];
+
+        // get reply content
+        let curr_reply = document.querySelector("#reply_content").value
+
+        // check if the input reply is empty
+        if (isEmpty(curr_reply)) {
+            return false;
+        }
+
+        // set the reply box blank
+        document.querySelector("#reply_content").value = "";
+
+        // send new message and the related info to the server
+        let fetchRedirectPage = {
+            method: 'POST',
+            headers: new Headers({
+                'message_id': message_id,
+                'username': getUsername(),
+                'reply_content': curr_reply
+            })
+        }
+
+        await fetch('/api/reply', fetchRedirectPage);
+
+        console.log("Posted reply: " + reply_content + " Author: " + username + " MessageId: " + message_id);
+
+    } catch (error) {
+        console.log('Post Reply Failed', error);
+    }
+}
+
+async function getReply() {
+    try {
+        let paths = window.location.pathname.split("/");
+        if (paths[1] !== "message" || !Number.isInteger(Number(paths[2]))) {
+            return;
+        }
+
+        let message_id = paths[2];
+
+        let fetchRedirectPage = {
+            method: 'GET',
+            headers: new Headers({
+                'message_id': message_id
+            })
+        }
+
+        let response = await fetch("/api/reply", fetchRedirectPage);
+        let response_data = await response.json();
+
+        // display the message to be replied
+        function displayMessageToBeReplied(message_username, message_content) {
+            let curr_message_container = document.getElementById("currMessage");
+            if (curr_message_container.children.length !== 0) {
+                return;
+            }
+            let curr_message = document.createElement("message");
+            let curr_message_author = document.createElement("author");
+            let curr_message_content = document.createElement("content");
+            curr_message_author.innerHTML = message_username;
+            curr_message_content.innerHTML = message_content;
+            curr_message.appendChild(curr_message_author);
+            curr_message.appendChild(curr_message_content);
+            curr_message_container.appendChild(curr_message);
+        }
+
+        // if no reply, do nothing
+        if (response_data["empty"] && response_data["empty"] === "yes") {
+            displayMessageToBeReplied(response_data["message_username"], response_data["message_content"]);
+            return;
+        }
+
+        displayMessageToBeReplied(response_data[0]["message_username"], response_data[0]["message_content"]);
+
+        // display replies
+        let replies_container = document.querySelector(".replies");
+        replies_container.innerHTML = '';
+        for (let i = 0; i < response_data.length; i++) {
+            let curr_reply = document.createElement("message");
+            let curr_reply_author = document.createElement("author");
+            let curr_reply_content = document.createElement("content");
+            curr_reply_author.innerHTML = response_data[i]["reply_username"] + ": ";
+            curr_reply_content.innerHTML = response_data[i]["reply_content"];
+            curr_reply.appendChild(curr_reply_author);
+            curr_reply.appendChild(curr_reply_content);
+            replies_container.appendChild(curr_reply);
+            replies_container.appendChild(document.createElement("br"));
+        }
+
+    } catch (error) {
+        console.log('Get Reply Failed', error);
+    }
+}
+
+async function replyPolling() {
+    // continuously get replies without blocking the use
+    await getReply();
+    await delay(1500);
+    await replyPolling();
 }

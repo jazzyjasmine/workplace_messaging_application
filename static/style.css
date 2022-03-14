@@ -1,5 +1,5 @@
 body {
-  background-color: #333366;
+  background-color: pink;
   margin: 0;
 }
 
@@ -13,52 +13,8 @@ body {
   font-family: sans-serif;
 }
 
-hero {
-  margin: auto;
-  width: 600px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 2fr 1fr;
-}
-
 h1, h2, h3 {
   font-family: 'Rowdies', cursive;
-}
-
-hero h1 {
-  display: block;
-  grid-column: 1/3;
-  grid-row: 1/3;
-  z-index: 4;
-  margin: auto;
-
-  font-size: 80px;
-  color: white;
-  text-shadow: 1px 1px 5px black, 3px 3px 2px orange, -3px -1px 2px blue;
-  font-family: 'Rowdies', cursive;
-}
-
-logo {
-  display: grid;
-  grid-column: 1/3;
-  grid-row: 1/3;
-  height: 300px;
-  width: 600px;
-}
-
-logo img {
-  grid-column: 1/3;
-  grid-row: 1/3;
-}
-
-logo img#tv {
-  height: 300px;
-  padding-left: 60px;
-}
-
-logo img#popcorn {
-  height: 200px;
-  padding-top: 100px;
 }
 
 button {
@@ -186,6 +142,27 @@ hero button {
 }
 
 .channel_interface message content {
+  display: block;
+  padding: 5px;
+  grid-column: 2/3;
+}
+
+.replies reply {
+  display: grid;
+  grid-column: 1/3;
+  grid-template-columns: 200px 1fr;
+  border-bottom: 1px solid lightgray;
+}
+
+.replies reply author {
+  color: #c93;
+  font-weight: bold;
+  display: block;
+  padding: 5px;
+  grid-column: 1/2;
+}
+
+.replies reply content {
   display: block;
   padding: 5px;
   grid-column: 2/3;

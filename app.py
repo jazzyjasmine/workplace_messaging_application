@@ -125,7 +125,7 @@ def authenticate():
 
 
 @app.route('/api/channel/message', methods=['GET', 'POST'])
-def handle_request():
+def handle_channel_request():
     if request.method == 'GET':
         channel_id = request.headers["channel_id"]
         g.db = connect_db()
@@ -176,6 +176,53 @@ def get_reply_count():
         message_to_reply_counts.append({"message_id": message_id,
                                         "reply_count": reply_count})
     return jsonify(message_to_reply_counts)
+
+
+@app.route('/api/reply', methods=['GET', 'POST'])
+def handle_reply_request():
+    if request.method == 'GET':
+        message_id = request.headers["message_id"]
+        g.db = connect_db()
+        cur_reply = g.db.execute(
+            "select username, reply_content from reply where message_id = ? order by reply_id desc",
+            [message_id]
+        )
+        data_reply = cur_reply.fetchall()
+        cur_reply.close()
+
+        cur_message = g.db.execute(
+            "select message_content, username from message where message_id = ?",
+            [message_id]
+        )
+        data_message = cur_message.fetchall()
+        cur_message.close()
+
+        message_content = data_message[0][0]
+        message_username = data_message[0][1]
+        if not data_reply:
+            return jsonify({"empty": "yes",
+                            "message_content": message_content,
+                            "message_username": message_username})
+
+        replies = []
+        for reply_username, reply_content in data_reply:
+            replies.append({"message_content": message_content,
+                            "message_username": message_username,
+                            "reply_content": reply_content,
+                            "reply_username": reply_username})
+        return jsonify(replies)
+
+    # if request.method == 'POST'
+    message_id = request.headers["message_id"]
+    reply_content = request.headers["reply_content"]
+    username = request.headers["username"]
+    g.db = connect_db()
+    cur = g.db.execute(
+        "insert into reply (reply_id, reply_content, message_id, username) values (null, ?, ?, ?)",
+        [reply_content, message_id, username])
+    g.db.commit()
+    cur.close()
+    return "success"
 
 
 def connect_db():
