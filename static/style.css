@@ -1,57 +1,57 @@
 body {
-  background-color: yellowgreen;
-  margin: 0;
+    background-color: yellowgreen;
+    margin: 0;
 }
 
 .container {
-  width: 960px;
-  height: 100%;
-  margin: auto;
-  padding: 20px;
-  background-color: white;
-  font-family: sans-serif;
+    width: 960px;
+    height: 100%;
+    margin: auto;
+    padding: 20px;
+    background-color: white;
+    font-family: sans-serif;
 }
 
 /* From cssbuttons.io by @bhaveshxrawat */
 button {
- background-color: #fff;
- border-radius: 24px;
- border-style: none;
- box-shadow: rgba(0, 0, 0, .2) 0 3px 5px -1px,rgba(0, 0, 0, .14) 0 6px 10px 0,rgba(0, 0, 0, .12) 0 1px 18px 0;
- box-sizing: border-box;
- color: #3c4043;
- font-size: 14px;
- font-weight: 500;
- font-family: inherit;
- letter-spacing: .25px;
- line-height: normal;
- padding: 6px 16px;
-  margin-top: 5px;
+    background-color: #fff;
+    border-radius: 24px;
+    border-style: none;
+    box-shadow: rgba(0, 0, 0, .2) 0 3px 5px -1px, rgba(0, 0, 0, .14) 0 6px 10px 0, rgba(0, 0, 0, .12) 0 1px 18px 0;
+    box-sizing: border-box;
+    color: #3c4043;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    letter-spacing: .25px;
+    line-height: normal;
+    padding: 6px 16px;
+    margin-top: 5px;
 }
 
 button:hover {
- background: #F6F9FE;
- color: green;
+    background: #F6F9FE;
+    color: green;
 }
 
 button:active {
- box-shadow: 0 4px 4px 0 rgb(60 64 67 / 30%), 0 8px 12px 6px rgb(60 64 67 / 15%);
- outline: none;
- border: 2px solid green;
+    box-shadow: 0 4px 4px 0 rgb(60 64 67 / 30%), 0 8px 12px 6px rgb(60 64 67 / 15%);
+    outline: none;
+    border: 2px solid green;
 }
 
 h1, h2, h3 {
-  font-family: 'Kumbh Sans', sans-serif;
+    font-family: 'Kumbh Sans', sans-serif;
 }
 
 hero h1 {
-  display: block;
-  grid-column: 1/3;
-  grid-row: 1/3;
-  z-index: 4;
-  margin: auto;
+    display: block;
+    grid-column: 1/3;
+    grid-row: 1/3;
+    z-index: 4;
+    margin: auto;
 
-  font-size: 80px;
+    font-size: 80px;
 }
 
 /*.clip {*/
@@ -59,101 +59,100 @@ hero h1 {
 /*}*/
 
 .channel {
-  /* display: grid; */
-  grid-template-columns: 1fr 2fr;
-  height: 100%;
+    /* display: grid; */
+    grid-template-columns: 1fr 2fr;
+    height: 100%;
 }
 
 .channel_interface {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    height: 100%;
 }
 
 .channel_interface .comment_box {
-  margin-right: 20px;
-  padding-right: 20px;
-  height: 100%;
-  border-right: 8px solid lightgray;
+    margin-right: 20px;
+    padding-right: 20px;
+    height: 100%;
+    border-right: 8px solid lightgray;
 }
 
 .channel_interface .comment_box textarea {
-  display: block;
-  width: 100%
+    display: block;
+    width: 100%
 }
 
 .channel_interface .comment_box button {
-  border-radius: 5px;
-  padding: 10px;
-  border: none;
-  margin-top: 15px;
+    border-radius: 5px;
+    padding: 10px;
+    border: none;
+    margin-top: 15px;
 }
 
 .channel_interface .comment_box label {
-  display: block;
-  font-family: 'Rowdies', cursive;
-  margin-bottom: 10px;
+    display: block;
+    font-family: 'Rowdies', cursive;
+    margin-bottom: 10px;
 }
 
 .channel_interface .messages {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  grid-template-rows: min-content;
-  grid-auto-rows: min-content;
-  height: auto;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    grid-template-rows: min-content;
+    grid-auto-rows: min-content;
+    height: auto;
 }
 
 message {
-  display: grid;
-  grid-column: 1/3;
-  grid-template-columns: 200px 1fr;
-  border-bottom: 1px solid lightgray;
-  background-color: #fff;
-  border: 1px solid #d5d9d9;
-  border-radius: 8px;
-  box-shadow: rgba(213, 217, 217, .5) 0 2px 5px 0;
-  box-sizing: border-box;
-  color: #0f1111;
-  font-family: "Amazon Ember",sans-serif;
-  font-size: 13px;
-  line-height: 20px;
-  padding: 0 10px 0 11px;
-  margin: 3px;
+    display: grid;
+    grid-column: 1/3;
+    grid-template-columns: 200px 1fr;
+    background-color: #fff;
+    border: 1px solid #d5d9d9;
+    border-radius: 8px;
+    box-shadow: rgba(213, 217, 217, .5) 0 2px 5px 0;
+    box-sizing: border-box;
+    color: #0f1111;
+    font-family: "Amazon Ember", sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    padding: 0 10px 0 11px;
+    margin: 3px;
 }
 
 message author {
-  color: forestgreen;
-  font-weight: bold;
-  display: block;
-  padding: 5px;
-  grid-column: 1/2;
+    color: forestgreen;
+    font-weight: bold;
+    display: block;
+    padding: 5px;
+    grid-column: 1/2;
 }
 
 message content {
-  display: block;
-  padding: 5px;
-  grid-column: 2/3;
+    display: block;
+    padding: 5px;
+    grid-column: 2/3;
 }
 
 .replies reply {
-  display: grid;
-  grid-column: 1/3;
-  grid-template-columns: 200px 1fr;
-  border-bottom: 1px solid lightgray;
+    display: grid;
+    grid-column: 1/3;
+    grid-template-columns: 200px 1fr;
+    border-bottom: 1px solid lightgray;
 }
 
 .replies reply author {
-  color: forestgreen;
-  font-weight: bold;
-  display: block;
-  padding: 5px;
-  grid-column: 1/2;
+    color: forestgreen;
+    font-weight: bold;
+    display: block;
+    padding: 5px;
+    grid-column: 1/2;
 }
 
 .replies reply content {
-  display: block;
-  padding: 5px;
-  grid-column: 2/3;
+    display: block;
+    padding: 5px;
+    grid-column: 2/3;
 }
 
 replyCount {
@@ -167,6 +166,27 @@ replyCount {
 
 a {
     text-decoration: none;
+}
+
+.existedChannelHrefs {
+    background-color: lightgreen;
+    border: 1px solid #d5d9d9;
+    border-radius: 8px;
+    box-shadow: rgba(213, 217, 217, .5) 0 2px 5px 0;
+    box-sizing: border-box;
+    color: #0f1111;
+    font-family: "Amazon Ember", sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    display: flex;
+    flex-direction: row;
+    width: 300px;
+    padding: 20px;
+}
+
+hero .create_channel {
+    margin-bottom: 50px;
+    margin-top: 30px;
 }
 
 

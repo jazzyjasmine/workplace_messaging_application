@@ -108,7 +108,6 @@ async function loadCreateChannel(push_history = true) {
         create_channel_button.addEventListener('click', async function (push_history) {
             let new_channel_name = document.querySelector("#channel_name").value;
             if (isEmpty(new_channel_name)) {
-                // alert("Channel name can not be empty!");
                 return false;
             }
             document.querySelector("#channel_name").value = "";
@@ -134,6 +133,7 @@ async function loadCreateChannel(push_history = true) {
             let a = document.createElement('a');
             a.href = "http://127.0.0.1:5000/channel/" + channel_ids[i];
             a.innerHTML = channel_names[i];
+            a.setAttribute("class", "existedChannelHrefs");
             container.appendChild(a);
             container.appendChild(document.createElement('br'));
         }
@@ -411,15 +411,15 @@ async function channelPolling() {
 }
 
 async function delay(ms) {
-  // return await for better async stack trace support in case of errors.
-  return await new Promise(resolve => setTimeout(resolve, ms));
+    // return await for better async stack trace support in case of errors.
+    return await new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function loadReplyPage(push_history=true) {
+async function loadReplyPage(push_history = true) {
     if (push_history) {
-            let url = '/message/' + window.location.pathname.split("/")[2];
-            history.pushState({"page": "message"}, null, url);
-        }
+        let url = '/message/' + window.location.pathname.split("/")[2];
+        history.pushState({"page": "message"}, null, url);
+    }
 
     document.querySelector(".clip").style.display = "none";
     document.querySelector(".channel_header").style.display = "none";
