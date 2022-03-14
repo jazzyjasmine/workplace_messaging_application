@@ -5,6 +5,7 @@ window.addEventListener("popstate", (newState) => {
     })
 });
 
+// Determine which page to load by url
 async function pageLoadClassify(push_history = true) {
     try {
         let paths = window.location.pathname.split("/");
@@ -12,19 +13,51 @@ async function pageLoadClassify(push_history = true) {
         if (paths[1] === "channel" && Number.isInteger(Number(paths[2]))) {
             await preLoadChannelPage(push_history, paths[2])
         } else if (paths[1] === "create") {
-            await loadCreateChannel(push_history);
+            await loadCreateChannelPage(push_history);
         } else if (paths[1] === "message" && Number.isInteger(Number(paths[2]))) {
             await loadReplyPage(push_history);
         } else {
-            await loadHomePage(push_history);
+            await homepageClassify(push_history);
         }
     } catch (error) {
         console.log('Page load failed.', error);
     }
 }
 
+// Check if valid user
+// Either redirect to loadAuthPage (invalid user) or loadCreateChannelPage (valid user)
+async function homepageClassify(push_history = true) {
+    try {
+        let fetchRedirectPage = {
+            method: 'POST',
+            headers: new Headers({
+                'username': getUsername(),
+                'auth_key': getAuthKey()
+            })
+        }
 
-function loadAuth(push_history = true, channel_id = null) {
+        let response = await fetch('/api/homepage', fetchRedirectPage);
+        let response_data = await response.json();
+        let verification_result = response_data['verification'];
+
+        if (verification_result === "fail") {
+            loadAuthPage(push_history);
+        } else {
+            await loadCreateChannelPage(push_history);
+        }
+
+        if (push_history) {
+            history.pushState({"page": "home"}, null, '/');
+        }
+
+    } catch (error) {
+        console.log('Auth key verification failed.', error);
+    }
+}
+
+// Load Auth page /auth, create account and become a valid user
+// Redirect to either preLoadChannelPage or loadCreateChannelPage, depending on previous page
+function loadAuthPage(push_history = true, channel_id = null) {
     document.querySelector(".create_channel").style.display = "none";
     document.querySelector(".auth").style.display = "block";
     document.querySelector(".clip").style.display = "none";
@@ -80,7 +113,7 @@ async function auth(push_history, channel_id) {
             if (channel_id) {
                 await preLoadChannelPage(push_history, channel_id)
             } else {
-                await loadCreateChannel(push_history);
+                await loadCreateChannelPage(push_history);
             }
         } else {
             alert("Username already exists!");
@@ -91,7 +124,10 @@ async function auth(push_history, channel_id) {
     }
 }
 
-async function loadCreateChannel(push_history = true) {
+// Load create channel page
+// Page functions: create channel, display existed channels with number of unread messages
+// Redict to loadChannelPage by creating a channel or clicking an existed channel href
+async function loadCreateChannelPage(push_history = true) {
     try {
         if (push_history) {
             history.pushState({"page": "create"}, null, '/create');
@@ -113,6 +149,7 @@ async function loadCreateChannel(push_history = true) {
             document.querySelector("#channel_name").value = "";
             await createChannel(push_history, new_channel_name);
         });
+
 
         // get all channels
         let fetchRedirectPage = {method: 'GET'}
@@ -166,40 +203,7 @@ async function createChannel(push_history, new_channel_name) {
     }
 }
 
-async function loadHomePage(push_history = true) {
-    try {
-        let fetchRedirectPage = {
-            method: 'POST',
-            headers: new Headers({
-                'username': getUsername(),
-                'auth_key': getAuthKey()
-            })
-        }
-
-        let response = await fetch('/api/homepage', fetchRedirectPage);
-        let response_data = await response.json();
-        let verification_result = response_data['verification'];
-
-        if (verification_result === "fail") {
-            loadAuth(push_history);
-        } else {
-            await loadCreateChannel(push_history);
-        }
-
-        if (push_history) {
-            history.pushState({"page": "home"}, null, '/');
-        }
-
-    } catch (error) {
-        console.log('Auth key verification failed.', error);
-    }
-}
-
-function isEmpty(input_string) {
-    // check if a string is empty
-    return !input_string.trim().length;
-}
-
+// checks if valid user/valid channel id if attempts to manually log in a channel page
 async function preLoadChannelPage(push_history, channel_id) {
     let fetchRedirectPage = {
         method: 'POST',
@@ -217,13 +221,14 @@ async function preLoadChannelPage(push_history, channel_id) {
     if (authentication_result === "success") {
         await loadChannelPage(push_history, channel_id);
     } else if (authentication_result === "need auth") {
-        loadAuth(push_history, channel_id);
+        loadAuthPage(push_history, channel_id);
     } else {
-        await loadHomePage(push_history);
+        await homepageClassify(push_history);
     }
 
 }
 
+// Load channel page
 async function loadChannelPage(push_history, channel_id) {
     try {
         console.log("loadChannelPage: " + channel_id);
@@ -252,17 +257,6 @@ async function loadChannelPage(push_history, channel_id) {
         console.log('Load channel page failed.', error);
     }
 }
-
-
-function getAuthKey() {
-    return window.localStorage.getItem("zhicongma_auth_key");
-}
-
-
-function getUsername() {
-    return window.localStorage.getItem("zhicongma_username");
-}
-
 
 async function postMessage() {
     try {
@@ -410,11 +404,7 @@ async function channelPolling() {
     await channelPolling();
 }
 
-async function delay(ms) {
-    // return await for better async stack trace support in case of errors.
-    return await new Promise(resolve => setTimeout(resolve, ms));
-}
-
+// Load reply page
 async function loadReplyPage(push_history = true) {
     if (push_history) {
         let url = '/message/' + window.location.pathname.split("/")[2];
@@ -541,8 +531,29 @@ async function getReply() {
 }
 
 async function replyPolling() {
-    // continuously get replies without blocking the use
+    // continuously get replies without blocking the user
     await getReply();
     await delay(1500);
     await replyPolling();
+}
+
+
+// ------------------------------------non page loading functions------------------------------------
+
+function isEmpty(input_string) {
+    // check if a string is empty
+    return !input_string.trim().length;
+}
+
+async function delay(ms) {
+    // return await for better async stack trace support in case of errors.
+    return await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getAuthKey() {
+    return window.localStorage.getItem("zhicongma_auth_key");
+}
+
+function getUsername() {
+    return window.localStorage.getItem("zhicongma_username");
 }
