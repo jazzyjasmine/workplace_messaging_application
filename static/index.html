@@ -1,24 +1,25 @@
 <html>
 <head>
     <title>Belay</title>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans&family=Sacramento&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <script src="/static/script.js"></script>
 </head>
 <body>
 
-<div class="channel_header">
-</div>
+<div class="channel_header"></div>
 
 <div class="container">
 
     <hero>
         <h1>Belay</h1>
         <div class="create_channel">
-            <label for="channel_name">New Channel Name:</label><br><input id="channel_name">
+            <label for="channel_name">New Channel Name</label><br><input id="channel_name">
             <br>
             <button value="create" id="create_channel">Create a Channel</button>
             <p id="existed_channel_rooms"></p>
@@ -41,8 +42,7 @@
             <div class="channel_interface">
                 <div class="comment_box">
                     <div>
-                        <label for="comment">What do you have to say?</label>
-                        <label for="post_content"></label><input id="post_content" name="comment" />
+                        <label for="post_content"></label><input id="post_content" name="comment"/>
                         <button id="post" type="submit" value="Post">Post</button>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
     <div class="reply">
         <div id="currMessage"></div>
         <div class="replyInput">
-            <label for="reply_content"></label><input id="reply_content" name="reply_content" />
+            <label for="reply_content"></label><input id="reply_content" name="reply_content"/>
             <br>
             <button id="reply_submit" type="submit" value="Reply">Reply</button>
         </div>

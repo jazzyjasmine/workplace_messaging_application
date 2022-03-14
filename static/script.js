@@ -338,6 +338,7 @@ async function getMessages() {
             curr_content.innerHTML = message["message_content"];
             curr_reply_entrance.href = "http://127.0.0.1:5000/message/" + message["message_id"];
             curr_reply_entrance.innerHTML = "reply";
+            curr_reply_entrance.setAttribute("class", "replyHref");
             curr_message.appendChild(curr_author);
             curr_message.appendChild(curr_content);
             curr_message.appendChild(curr_reply_entrance);
@@ -388,7 +389,11 @@ async function getReplyCount() {
             let reply_count = response_data[i]["reply_count"];
             let curr_message_container = document.getElementById("message_" + message_id);
             let curr_reply_count = document.createElement("replyCount");
-            curr_reply_count.innerHTML = reply_count + " replies";
+            if (reply_count === "1" || reply_count === 1) {
+                curr_reply_count.innerHTML = reply_count + " reply";
+            } else {
+                curr_reply_count.innerHTML = reply_count + " replies";
+            }
             curr_message_container.appendChild(curr_reply_count);
         }
 
