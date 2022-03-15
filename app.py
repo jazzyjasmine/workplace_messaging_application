@@ -63,17 +63,53 @@ def auth():
 @app.route('/api/createchannel', methods=['GET', 'POST'])
 def create_channel():
     if request.method == 'GET':
-        channel_ids, channel_names = get_channels()
+        channel_ids, channel_names, channel_message_counts = get_channels()
         if not channel_ids:
             return jsonify({"result": "empty"})
-        return jsonify({"channel_ids": ",".join(channel_ids),
-                        "channel_names": ",".join(channel_names)})
 
+        channel_unread_message_counts = get_channel_unread_message_counts(channel_ids,
+                                                                          channel_message_counts,
+                                                                          request.headers["username"])
+
+        return jsonify({"channel_ids": ",".join(channel_ids),
+                        "channel_names": ",".join(channel_names),
+                        "channel_unread_message_counts": ",".join(channel_unread_message_counts)})
+
+    # if request.method == 'POST'
     new_channel_name = request.headers['new_channel_name']
     if not add_new_channel(new_channel_name):
         return jsonify({"result": "duplicate channel name"})
     return jsonify({"result": "success",
                     "channel_id": get_channel_id_by_name(new_channel_name)})
+
+
+def get_channel_unread_message_counts(channel_ids, channel_message_counts, username):
+    g.db = connect_db()
+    cur = g.db.execute("select channel_id, latest_message_id from user_latest_message where username = ?",
+                       [username])
+    data = cur.fetchall()
+    cur.close()
+
+    channel_unread_message_counts = [str(i) for i in channel_message_counts]
+
+    if not data:
+        return channel_unread_message_counts
+
+    for channel_id, latest_message_id in data:
+        read_message_count = get_read_message_count(channel_id, latest_message_id)
+        channel_index = channel_ids.index(str(channel_id))
+        channel_unread_message_counts[channel_index] = str(channel_message_counts[channel_index] - read_message_count)
+
+    return channel_unread_message_counts
+
+
+def get_read_message_count(channel_id, latest_message_id):
+    g.db = connect_db()
+    cur = g.db.execute("select sum(case when message_id <= ? then 1 else 0 end) from message where channel_id = ?",
+                       [latest_message_id, channel_id])
+    data = cur.fetchall()
+    cur.close()
+    return int(data[0][0])
 
 
 def add_new_channel(channel_name):
@@ -101,10 +137,12 @@ def get_channel_id_by_name(channel_name):
 
 def get_channels():
     g.db = connect_db()
-    cur = g.db.execute("select * from channel")
+    cur = g.db.execute(
+        "select channel.channel_id, channel.channel_name, count(message_id) from channel left join message on message.channel_id = channel.channel_id group by channel.channel_id")
     data = cur.fetchall()
     cur.close()
-    return [str(channel[0]) for channel in data], [channel[1] for channel in data]
+    return [str(channel[0]) for channel in data], [channel[1] for channel in data], [int(channel[2]) for channel in
+                                                                                     data]
 
 
 @app.route('/api/channel/authentication', methods=['POST'])
@@ -113,7 +151,7 @@ def authenticate():
     auth_key = request.headers["auth_key"]
     channel_id = request.headers["channel_id"]
 
-    channel_ids, _ = get_channels()
+    channel_ids, _, _ = get_channels()
 
     if channel_id not in channel_ids:
         return jsonify({"result": "invalid channel id"})
@@ -124,31 +162,8 @@ def authenticate():
         return jsonify({"result": "need auth"})
 
 
-@app.route('/api/channel/message', methods=['GET', 'POST'])
+@app.route('/api/channel/message/post', methods=['POST'])
 def handle_channel_request():
-    if request.method == 'GET':
-        channel_id = request.headers["channel_id"]
-        g.db = connect_db()
-        cur = g.db.execute(
-            "select message_id, message_content, username from message where channel_id = ?",
-            [channel_id]
-        )
-        data = cur.fetchall()
-        cur.close()
-
-        if not data:
-            return jsonify({"empty": "yes"})
-
-        messages_for_channel = []
-        for message_id, message_content, username in data:
-            message_info_dict = {"message_id": message_id,
-                                 "message_content": message_content,
-                                 "username": username}
-            messages_for_channel.append(message_info_dict)
-
-        return jsonify(messages_for_channel)
-
-    # if request.method == 'POST'
     message_content = request.headers["message_content"]
     channel_id = int(request.headers['channel_id'])
     username = request.headers['username']
@@ -159,6 +174,51 @@ def handle_channel_request():
     g.db.commit()
     cur.close()
     return "success"
+
+
+@app.route('/api/channel/message/get', methods=['POST'])
+def get_messages_and_report_last():
+    channel_id = request.headers["channel_id"]
+    username = request.headers["username"]
+
+    g.db = connect_db()
+    cur = g.db.execute(
+        "select message_id, message_content, username from message where channel_id = ? order by message_id",
+        [channel_id]
+    )
+    data = cur.fetchall()
+    cur.close()
+
+    if not data:
+        return jsonify({"empty": "yes"})
+
+    messages_for_channel = []
+    for this_message_id, this_message_content, this_username in data:
+        message_info_dict = {"message_id": this_message_id,
+                             "message_content": this_message_content,
+                             "username": this_username}
+        messages_for_channel.append(message_info_dict)
+
+    curr_latest_message_id = data[-1][0]
+
+    g.db = connect_db()
+    cur_db_latest = g.db.execute(
+        "select latest_message_id from user_latest_message where channel_id = ? and username = ?",
+        [channel_id, username]
+    )
+    data_db_latest = cur_db_latest.fetchall()
+    cur_db_latest.close()
+
+    if not data_db_latest or int(curr_latest_message_id) != int(data_db_latest[0][0]):
+        # print("Inserted", username, channel_id, curr_latest_message_id)
+        g.db = connect_db()
+        cur_insert = g.db.execute(
+            "insert into user_latest_message (username, channel_id, latest_message_id) values (?, ?, ?)",
+            [username, channel_id, curr_latest_message_id])
+        g.db.commit()
+        cur_insert.close()
+
+    return jsonify(messages_for_channel)
 
 
 @app.route('/api/channel/reply', methods=['GET'])

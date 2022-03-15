@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS reply (
 );
 
 CREATE TABLE IF NOT EXISTS user_latest_message (
-    username TEXT PRIMARY KEY,
+    username TEXT NOT NULL,
+    channel_id INTEGER NOT NULL,
     latest_message_id INTEGER NOT NULL
 );
 
