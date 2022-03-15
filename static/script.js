@@ -212,19 +212,21 @@ async function getChannelsInfo() {
         container.innerHTML = "Existed channels";
 
         for (let i = 0; i < channel_ids.length; i++) {
+            let channel_info_container = document.createElement('channelInfo');
             let a = document.createElement('a');
             a.href = "http://127.0.0.1:5000/channel/" + channel_ids[i];
             a.innerHTML = channel_names[i];
             a.setAttribute("class", "existedChannelHrefs");
 
-            container.appendChild(a);
+            channel_info_container.appendChild(a);
 
             if (channel_unread_message_counts[i] !== "0" && channel_unread_message_counts[i] !== 0) {
                 let unreadCount = document.createElement('unreadCount');
                 unreadCount.innerHTML = channel_unread_message_counts[i] + " unread messages"
-                container.appendChild(unreadCount);
+                channel_info_container.appendChild(unreadCount);
             }
 
+            container.appendChild(channel_info_container);
             container.appendChild(document.createElement('br'));
         }
     } catch (error) {

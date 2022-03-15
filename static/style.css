@@ -169,24 +169,38 @@ a {
 }
 
 .existedChannelHrefs {
-    background-color: lightgreen;
-    border: 1px solid #d5d9d9;
-    border-radius: 8px;
+    background-color: gainsboro;
     box-shadow: rgba(213, 217, 217, .5) 0 2px 5px 0;
     box-sizing: border-box;
     color: #0f1111;
     font-family: "Amazon Ember", sans-serif;
-    font-size: 18px;
-    line-height: 20px;
+    font-size: 22px;
+    line-height: 15px;
     display: flex;
     flex-direction: row;
-    width: 300px;
     padding: 20px;
 }
 
 hero .create_channel {
     margin-bottom: 50px;
     margin-top: 30px;
+}
+
+channelInfo {
+    display: grid;
+    grid-template-columns: 300px auto;
+    grid-template-rows: min-content;
+    grid-auto-rows: min-content;
+}
+
+/*channelInfo a {*/
+/*    display: grid;*/
+/*    !*grid-column: 1/2;*!*/
+/*}*/
+
+channelInfo unreadCount {
+    margin-left: 20px;
+    margin-top: 20px;
 }
 
 
