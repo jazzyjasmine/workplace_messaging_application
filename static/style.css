@@ -67,14 +67,15 @@ hero h1 {
 .channel_interface {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    height: 100%;
+    height: auto;
 }
 
 .channel_interface .comment_box {
     margin-right: 20px;
     padding-right: 20px;
     height: 100%;
-    border-right: 8px solid lightgray;
+    grid-column: 2;
+    margin-bottom: 10px;
 }
 
 .channel_interface .comment_box textarea {
@@ -101,6 +102,7 @@ hero h1 {
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
     height: auto;
+    grid-column: 2;
 }
 
 message {
