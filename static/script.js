@@ -60,9 +60,11 @@ async function homepageClassify(push_history = true) {
 function loadAuthPage(push_history = true, channel_id = null) {
     document.querySelector(".create_channel").style.display = "none";
     document.querySelector(".auth").style.display = "block";
-    document.querySelector(".clip").style.display = "none";
+    // document.querySelector(".clip").style.display = "none";
     document.querySelector(".channel_header").style.display = "none";
     document.querySelector(".reply").style.display = "none";
+    document.querySelector(".messages").style.display = "none";
+    document.querySelector(".comment_box").style.display = "none";
 
     let submit_auth_button = document.querySelector('#submit_auth');
     submit_auth_button.addEventListener('click', async function (push_history) {
@@ -134,12 +136,14 @@ async function loadCreateChannelPage(push_history = true) {
         }
 
         document.querySelector(".auth").style.display = "none";
-        document.querySelector(".clip").style.display = "none";
-        document.querySelector(".channel_header").style.display = "none";
+        // document.querySelector(".clip").style.display = "none";
+        // document.querySelector(".channel_header").style.display = "none";
         document.querySelector(".create_channel").style.display = "block";
         document.querySelector(".reply").style.display = "none";
+        document.querySelector(".messages").style.display = "none";
+        document.querySelector(".comment_box").style.display = "none";
 
-        // create channel button
+        // create channel button listener
         let create_channel_button = document.querySelector("#create_channel");
         create_channel_button.addEventListener('click', async function (push_history) {
             let new_channel_name = document.querySelector("#channel_name").value;
@@ -149,6 +153,15 @@ async function loadCreateChannelPage(push_history = true) {
             document.querySelector("#channel_name").value = "";
             await createChannel(push_history, new_channel_name);
         });
+
+        // channel button listener
+        // let channel_buttons = document.querySelector(".existedChannelHrefs");
+        // for (let i = 0; i < channel_buttons.length; i++) {
+        //     channel_buttons[i].addEventListener('click', async () => {
+        //         console.log(this.id + " is clicked!");
+        //         await loadChannelPage(push_history, this.id.slice(15, this.id.length));
+        //     })
+        // }
 
         // get all channels
         await createChannelPolling();
@@ -184,16 +197,20 @@ async function createChannel(push_history, new_channel_name) {
 
 async function getChannelsInfo() {
     try {
-        if (window.location.pathname.split("/")[1] !== "create") {
+        if (window.location.pathname.split("/")[1] !== "create" && window.location.pathname.split("/")[1] !== "channel") {
             return;
         }
-
 
         let fetchRedirectPage = {
             method: 'GET',
             headers: new Headers({
                 'username': getUsername()
             })
+        }
+
+        let curr_channel_id = null;
+        if (window.location.pathname.split("/")[1] !== "channel") {
+            curr_channel_id = window.location.pathname.split("/")[2];
         }
 
         const response = await fetch('/api/createchannel', fetchRedirectPage);
@@ -213,14 +230,19 @@ async function getChannelsInfo() {
 
         for (let i = 0; i < channel_ids.length; i++) {
             let channel_info_container = document.createElement('channelInfo');
-            let a = document.createElement('a');
-            a.href = "http://127.0.0.1:5000/channel/" + channel_ids[i];
-            a.innerHTML = channel_names[i];
-            a.setAttribute("class", "existedChannelHrefs");
+            let channel_button = document.createElement('button');
+            channel_button.id = "channel_button_" + channel_ids[i];
+            channel_button.innerHTML = channel_names[i];
+            channel_button.setAttribute("class", "existedChannelHrefs");
 
-            channel_info_container.appendChild(a);
+            channel_button.addEventListener('click', async () => {
+                console.log(channel_button.id + " is clicked!");
+                await loadChannelPage(true, channel_button.id.slice(15, channel_button.id.length));
+            })
 
-            if (channel_unread_message_counts[i] !== "0" && channel_unread_message_counts[i] !== 0) {
+            channel_info_container.appendChild(channel_button);
+
+            if (channel_unread_message_counts[i] !== "0" && channel_unread_message_counts[i] !== 0 && channel_ids[i] !== curr_channel_id) {
                 let unreadCount = document.createElement('unreadCount');
                 unreadCount.innerHTML = channel_unread_message_counts[i] + " unread messages"
                 channel_info_container.appendChild(unreadCount);
@@ -237,7 +259,7 @@ async function getChannelsInfo() {
 async function createChannelPolling() {
     // continuously get replies without blocking the user
     await getChannelsInfo();
-    await delay(700);
+    await delay(1500);
     await createChannelPolling();
 }
 
@@ -270,7 +292,6 @@ async function preLoadChannelPage(push_history, channel_id) {
 // Load channel page
 async function loadChannelPage(push_history, channel_id) {
     try {
-        console.log("loadChannelPage: " + channel_id);
         if (push_history) {
             let url = '/channel/' + channel_id;
             history.pushState({"page": "channel"}, null, url);
@@ -278,18 +299,29 @@ async function loadChannelPage(push_history, channel_id) {
 
         document.querySelector(".clip").style.display = "block";
         document.querySelector(".channel_header").style.display = "block";
+        document.querySelector(".comment_box").style.display = "block";
         document.querySelector(".auth").style.display = "none";
-        document.querySelector(".create_channel").style.display = "none";
+        document.querySelector(".create_channel").style.display = "block";
         document.querySelector(".messages").innerHTML = "";
+        document.querySelector(".messages").style.display = "block";
         document.querySelector(".reply").style.display = "none";
-        document.querySelector("#existed_channel_rooms").style.display = "none";
+        document.querySelector("#existed_channel_rooms").style.display = "block";
 
         let post_button = document.querySelector("#post");
         post_button.addEventListener('click', async function () {
             await postMessage();
         });
 
-        console.log("finish loading channel page " + channel_id);
+        // create channel button
+        let create_channel_button = document.querySelector("#create_channel");
+        create_channel_button.addEventListener('click', async function (push_history) {
+            let new_channel_name = document.querySelector("#channel_name").value;
+            if (isEmpty(new_channel_name)) {
+                return false;
+            }
+            document.querySelector("#channel_name").value = "";
+            await createChannel(push_history, new_channel_name);
+        });
 
         await channelPolling();
 
@@ -438,6 +470,7 @@ async function getReplyCount() {
 
 async function channelPolling() {
     // continuously get messages without blocking the user
+    await getChannelsInfo();
     await getMessages();
     await getReplyCount();
     await delay(1500);

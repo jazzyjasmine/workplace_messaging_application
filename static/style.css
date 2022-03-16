@@ -193,6 +193,7 @@ channelInfo {
     grid-template-columns: 300px auto;
     grid-template-rows: min-content;
     grid-auto-rows: min-content;
+    margin-top: 20px;
 }
 
 /*channelInfo a {*/
@@ -203,6 +204,7 @@ channelInfo {
 channelInfo unreadCount {
     margin-left: 20px;
     margin-top: 20px;
+    margin-right: 10px;
 }
 
 

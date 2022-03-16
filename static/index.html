@@ -18,13 +18,6 @@
 
     <hero>
         <h1>Belay</h1>
-        <div class="create_channel">
-            <label for="channel_name">New Channel Name</label><br><input id="channel_name">
-            <br>
-            <button value="create" id="create_channel">Create a Channel</button>
-        </div>
-        <div id="existed_channel_rooms">
-        </div>
     </hero>
 
     <div class="auth">
@@ -37,17 +30,25 @@
         <button id="submit_auth">Submit</button>
     </div>
 
-
     <div class="clip">
         <div class="channel">
             <div class="channel_interface">
+                <div class="create_channel">
+                    <label for="channel_name">New Channel Name</label><br><input id="channel_name">
+                    <br>
+                    <button value="create" id="create_channel">Create a Channel</button>
+                    <div id="existed_channel_rooms">
+                    </div>
+                </div>
                 <div class="comment_box">
                     <div>
                         <label for="post_content"></label><input id="post_content" name="comment"/>
                         <button id="post" type="submit" value="Post">Post</button>
                     </div>
+                    <div class="messages">
+                    </div>
                 </div>
-                <div class="messages"></div>
+
             </div>
         </div>
     </div>
