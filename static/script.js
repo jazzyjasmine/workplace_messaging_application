@@ -385,16 +385,20 @@ async function getMessages() {
 
             curr_content.innerHTML = message["message_content"];
 
-            curr_reply_entrance.id = "message_" + message["message_id"];
+            curr_reply_entrance.id = "message_reply_" + message["message_id"];
             curr_reply_entrance.innerHTML = "reply";
             curr_reply_entrance.setAttribute("class", "replyHref");
             curr_reply_entrance.addEventListener('click', async () => {
-                await loadReplyPage(true, curr_reply_entrance.id.slice(8, curr_reply_entrance.id.length));
+                await loadReplyPage(true, curr_reply_entrance.id.slice(14, curr_reply_entrance.id.length));
             })
+
+            let reply_count_holder = document.createElement("div");
+            reply_count_holder.id = "reply_holder_" + message["message_id"];
 
             curr_message.appendChild(curr_author);
             curr_message.appendChild(curr_content);
             curr_message.appendChild(curr_reply_entrance);
+            curr_message.appendChild(reply_count_holder);
             curr_message.id = "message_" + message["message_id"];
 
             let url_matches = message["message_content"].match(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig);
@@ -456,14 +460,19 @@ async function getReplyCount() {
             }
             let message_id = response_data[i]["message_id"];
             let reply_count = response_data[i]["reply_count"];
-            let curr_message_container = document.getElementById("message_" + message_id);
+
+            let curr_reply_container = document.getElementById("reply_holder_" + message_id);
+            curr_reply_container.innerHTML = "";
+
             let curr_reply_count = document.createElement("replyCount");
+            curr_reply_count.id = "reply_count_" + message_id;
             if (reply_count === "1" || reply_count === 1) {
                 curr_reply_count.innerHTML = reply_count + " reply";
             } else {
                 curr_reply_count.innerHTML = reply_count + " replies";
             }
-            curr_message_container.appendChild(curr_reply_count);
+
+            curr_reply_container.appendChild(curr_reply_count);
         }
 
     } catch (error) {
