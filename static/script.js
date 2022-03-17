@@ -139,6 +139,7 @@ async function loadCreateChannelPage(push_history = true) {
             history.pushState({"page": "create"}, null, '/create');
         }
 
+        document.querySelector(".clip").style.display = "block";
         document.querySelector(".auth").style.display = "none";
         document.querySelector(".create_channel").style.display = "block";
         document.querySelector(".reply").style.display = "none";
