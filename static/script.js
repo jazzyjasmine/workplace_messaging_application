@@ -65,11 +65,12 @@ function loadAuthPage(push_history = true, channel_id = null) {
         history.pushState({"page": "auth"}, null, '/auth');
     }
 
-    document.querySelector(".create_channel").style.display = "none";
+    // document.querySelector(".create_channel").style.display = "none";
     document.querySelector(".auth").style.display = "block";
     document.querySelector(".channel_header").style.display = "none";
     document.querySelector(".reply").style.display = "none";
-    document.querySelector(".comment_box").style.display = "none";
+    // document.querySelector(".comment_box").style.display = "none";
+    document.querySelector(".clip").style.display = "none";
 
     let submit_auth_button = document.querySelector('#submit_auth');
     submit_auth_button.addEventListener('click', async function (push_history) {
@@ -389,6 +390,7 @@ async function getMessages() {
             curr_reply_entrance.innerHTML = "reply";
             curr_reply_entrance.setAttribute("class", "replyHref");
             curr_reply_entrance.addEventListener('click', async () => {
+                console.log(curr_reply_entrance.id.slice(14, curr_reply_entrance.id.length));
                 await loadReplyPage(true, curr_reply_entrance.id.slice(14, curr_reply_entrance.id.length));
             })
 
@@ -558,6 +560,7 @@ async function getReply() {
         }
 
         let message_id = paths[2];
+        // console.log("message id in getReply func" + message_id);
 
         let fetchRedirectPage = {
             method: 'GET',
@@ -570,11 +573,9 @@ async function getReply() {
         let response_data = await response.json();
 
         // display the message to be replied
+        document.getElementById("currMessage").innerHTML = "";
         function displayMessageToBeReplied(message_username, message_content) {
             let curr_message_container = document.getElementById("currMessage");
-            if (curr_message_container.children.length !== 0) {
-                return;
-            }
             let curr_message = document.createElement("message");
             let curr_message_author = document.createElement("author");
             let curr_message_content = document.createElement("content");
@@ -585,16 +586,18 @@ async function getReply() {
             curr_message_container.appendChild(curr_message);
         }
 
+        let replies_container = document.querySelector(".replies");
+
         // if no reply, do nothing
         if (response_data["empty"] && response_data["empty"] === "yes") {
             displayMessageToBeReplied(response_data["message_username"], response_data["message_content"]);
+            replies_container.innerHTML = '';
             return;
         }
 
         displayMessageToBeReplied(response_data[0]["message_username"], response_data[0]["message_content"]);
 
         // display replies
-        let replies_container = document.querySelector(".replies");
         replies_container.innerHTML = '';
         for (let i = 0; i < response_data.length; i++) {
             let curr_reply = document.createElement("message");
