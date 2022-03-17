@@ -219,7 +219,7 @@ async function getChannelsInfo() {
             channel_button.setAttribute("class", "existedChannelHrefs");
 
             if (channel_ids[i] === curr_channel_id) {
-                channel_button.style.backgroundColor = "Darkviolet";
+                channel_button.style.backgroundColor = "Deeppink";
             }
 
             channel_button.addEventListener('click', async () => {
@@ -229,7 +229,11 @@ async function getChannelsInfo() {
             channel_info_container.appendChild(channel_button);
             if (channel_unread_message_counts[i] !== "0" && channel_unread_message_counts[i] !== 0 && channel_ids[i] !== curr_channel_id) {
                 let unreadCount = document.createElement('unreadCount');
-                unreadCount.innerHTML = channel_unread_message_counts[i] + " unread messages"
+                if (channel_unread_message_counts[i] === "1" || channel_unread_message_counts[i] === 1) {
+                    unreadCount.innerHTML = channel_unread_message_counts[i] + " unread message"
+                } else {
+                    unreadCount.innerHTML = channel_unread_message_counts[i] + " unread messages"
+                }
                 channel_info_container.appendChild(unreadCount);
             }
 
@@ -244,7 +248,7 @@ async function getChannelsInfo() {
 async function createChannelPolling() {
     // continuously get replies without blocking the user
     await getChannelsInfo();
-    await delay(1500);
+    await delay(3000);
     await createChannelPolling();
 }
 
@@ -376,7 +380,9 @@ async function getMessages() {
             let curr_author = document.createElement("author");
             let curr_content = document.createElement("content");
             let curr_reply_entrance = document.createElement('button');
+
             curr_author.innerHTML = message["username"];
+
             curr_content.innerHTML = message["message_content"];
 
             curr_reply_entrance.id = "message_" + message["message_id"];
@@ -390,6 +396,22 @@ async function getMessages() {
             curr_message.appendChild(curr_content);
             curr_message.appendChild(curr_reply_entrance);
             curr_message.id = "message_" + message["message_id"];
+
+            let url_matches = message["message_content"].match(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig);
+            if (url_matches) {
+                let img_container = document.createElement("div");
+                img_container.setAttribute("class","imgContainer");
+                for (let single_url of url_matches) {
+                    if (!isValidImageURL(single_url)) {
+                        continue;
+                    }
+                    let curr_img = document.createElement("img");
+                    curr_img.src = single_url;
+                    img_container.appendChild(curr_img);
+                }
+                curr_message.appendChild(img_container);
+            }
+
             return curr_message;
         }
 
@@ -454,7 +476,7 @@ async function channelPolling() {
     await getChannelsInfo();
     await getMessages();
     await getReplyCount();
-    await delay(1500);
+    await delay(3000);
     await channelPolling();
 }
 
@@ -585,7 +607,7 @@ async function getReply() {
 async function replyPolling() {
     // continuously get replies without blocking the user
     await getReply();
-    await delay(1500);
+    await delay(3000);
     await replyPolling();
 }
 
@@ -622,4 +644,12 @@ function getAuthKey() {
 function getUsername() {
     // get username from localStorage
     return window.localStorage.getItem("zhicongma_username");
+}
+
+// reference of this function: https://thewebdev.info/2021/08/15/how-to-verify-that-an-url-is-an-image-url-with-javascript/
+function isValidImageURL(url) {
+  if (typeof url !== 'string') {
+    return false;
+  }
+  return (url.match(/^http[^\?]*.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?$/gmi) !== null);
 }

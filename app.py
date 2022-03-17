@@ -27,7 +27,10 @@ def homepage():
 
 def is_valid_account(username, auth_key):
     g.db = connect_db()
-    cur = g.db.execute('select username, auth_key from user where username = ?', [username])
+    cur = g.db.execute(
+        'select username, auth_key from user where username = ?',
+        [username]
+    )
     data = cur.fetchall()
     g.db.close()
     return data and auth_key == data[0][1]
@@ -39,7 +42,10 @@ def auth():
     password = request.headers['password']
 
     g.db = connect_db()
-    cur = g.db.execute("select username, auth_key, password from user where username = ?", [username])
+    cur = g.db.execute(
+        "select username, auth_key, password from user where username = ?",
+        [username]
+    )
     data = cur.fetchall()
     cur.close()
 
@@ -51,9 +57,10 @@ def auth():
         return jsonify({"result": "username exists"})
 
     new_auth_key = uuid.uuid1().hex
-    insert_new_account = "insert into user (username, auth_key, password) values (?, ?, ?)"
-    data_tuple = (username, new_auth_key, password)
-    cur = g.db.execute(insert_new_account, data_tuple)
+    cur = g.db.execute(
+        "insert into user (username, auth_key, password) values (?, ?, ?)",
+        [username, new_auth_key, password]
+    )
     g.db.commit()
     cur.close()
     return jsonify({"result": "success",
@@ -85,8 +92,10 @@ def create_channel():
 
 def get_channel_unread_message_counts(channel_ids, channel_message_counts, username):
     g.db = connect_db()
-    cur = g.db.execute("select channel_id, latest_message_id from user_latest_message where username = ?",
-                       [username])
+    cur = g.db.execute(
+        "select channel_id, latest_message_id from user_latest_message where username = ?",
+        [username]
+    )
     data = cur.fetchall()
     cur.close()
 
@@ -105,8 +114,10 @@ def get_channel_unread_message_counts(channel_ids, channel_message_counts, usern
 
 def get_read_message_count(channel_id, latest_message_id):
     g.db = connect_db()
-    cur = g.db.execute("select sum(case when message_id <= ? then 1 else 0 end) from message where channel_id = ?",
-                       [latest_message_id, channel_id])
+    cur = g.db.execute(
+        "select sum(case when message_id <= ? then 1 else 0 end) from message where channel_id = ?",
+        [latest_message_id, channel_id]
+    )
     data = cur.fetchall()
     cur.close()
     return int(data[0][0])
@@ -121,7 +132,10 @@ def add_new_channel(channel_name):
     if channel_name in curr_channel_names:
         return False
 
-    cur = g.db.execute("insert into channel (channel_id, channel_name) values (null, ?)", [channel_name])
+    cur = g.db.execute(
+        "insert into channel (channel_id, channel_name) values (null, ?)",
+        [channel_name]
+    )
     g.db.commit()
     cur.close()
     return True
@@ -129,7 +143,10 @@ def add_new_channel(channel_name):
 
 def get_channel_id_by_name(channel_name):
     g.db = connect_db()
-    cur = g.db.execute("select channel_id from channel where channel_name = ?", [channel_name])
+    cur = g.db.execute(
+        "select channel_id from channel where channel_name = ?",
+        [channel_name]
+    )
     data = cur.fetchall()
     cur.close()
     return data[0][0]
@@ -138,7 +155,8 @@ def get_channel_id_by_name(channel_name):
 def get_channels():
     g.db = connect_db()
     cur = g.db.execute(
-        "select channel.channel_id, channel.channel_name, count(message_id) from channel left join message on message.channel_id = channel.channel_id group by channel.channel_id")
+        "select channel.channel_id, channel.channel_name, count(message_id) from channel left join message on message.channel_id = channel.channel_id group by channel.channel_id"
+    )
     data = cur.fetchall()
     cur.close()
     return [str(channel[0]) for channel in data], [channel[1] for channel in data], [int(channel[2]) for channel in
@@ -170,7 +188,8 @@ def handle_channel_request():
     g.db = connect_db()
     cur = g.db.execute(
         "insert into message (message_id, message_content, channel_id, username) values (null, ?, ?, ?)",
-        [message_content, channel_id, username])
+        [message_content, channel_id, username]
+    )
     g.db.commit()
     cur.close()
     return "success"
@@ -214,7 +233,8 @@ def get_messages_and_report_last():
         g.db = connect_db()
         cur_insert = g.db.execute(
             "insert into user_latest_message (username, channel_id, latest_message_id) values (?, ?, ?)",
-            [username, channel_id, curr_latest_message_id])
+            [username, channel_id, curr_latest_message_id]
+        )
         g.db.commit()
         cur_insert.close()
 
@@ -279,7 +299,8 @@ def handle_reply_request():
     g.db = connect_db()
     cur = g.db.execute(
         "insert into reply (reply_id, reply_content, message_id, username) values (null, ?, ?, ?)",
-        [reply_content, message_id, username])
+        [reply_content, message_id, username]
+    )
     g.db.commit()
     cur.close()
     return "success"

@@ -1,28 +1,24 @@
 body {
-    background-color: yellowgreen;
+    background-color: whitesmoke;
     margin: 0;
+    font-family: 'Kumbh Sans', sans-serif, serif;
 }
 
 .container {
     width: 960px;
-    height: auto;
     margin: auto;
     padding: 20px;
     background-color: white;
-    font-family: sans-serif;
 }
 
 /* From cssbuttons.io by @bhaveshxrawat */
 button {
     background-color: #fff;
-    border-radius: 24px;
-    border-style: none;
-    box-shadow: rgba(0, 0, 0, .2) 0 3px 5px -1px, rgba(0, 0, 0, .14) 0 6px 10px 0, rgba(0, 0, 0, .12) 0 1px 18px 0;
+    border-style: outset;
     box-sizing: border-box;
     color: #3c4043;
     font-size: 14px;
     font-weight: 500;
-    font-family: inherit;
     letter-spacing: .25px;
     line-height: normal;
     padding: 6px 16px;
@@ -31,35 +27,20 @@ button {
 }
 
 button:hover {
-    background: #F6F9FE;
-}
-
-button:active {
-    box-shadow: 0 4px 4px 0 rgb(60 64 67 / 30%), 0 8px 12px 6px rgb(60 64 67 / 15%);
-    outline: none;
-    border: 2px solid green;
-}
-
-h1, h2, h3 {
-    font-family: 'Kumbh Sans', sans-serif;
+    background: yellow;
 }
 
 hero h1 {
     display: block;
-    grid-column: 1/3;
-    grid-row: 1/3;
-    z-index: 4;
-    margin: auto;
-
-    font-size: 80px;
+    font-size: 100px;
+    margin-left: 30px;
+    margin-top: 30px;
 }
 
-/*.clip {*/
-/*  overflow: hidden;*/
-/*}*/
-
 .channel {
-    /* display: grid; */
+    margin-top: 70px;
+    margin-left: 70px;
+    margin-right: 70px;
     grid-template-columns: 1fr 2fr;
     height: 100%;
 }
@@ -84,17 +65,15 @@ hero h1 {
 }
 
 .channel_interface .comment_box button {
-    border-radius: 5px;
-    padding: 10px;
-    border: none;
+    padding: 5px;
     margin-top: 15px;
     width: 50px;
     margin-bottom: 5px;
+    border-style: outset;
 }
 
 .channel_interface .comment_box label {
     display: block;
-    font-family: 'Rowdies', cursive;
     margin-bottom: 10px;
 }
 
@@ -113,19 +92,18 @@ message {
     grid-template-columns: 200px 1fr;
     background-color: #fff;
     border: 1px solid #d5d9d9;
-    border-radius: 8px;
-    box-shadow: rgba(213, 217, 217, .5) 0 2px 5px 0;
     box-sizing: border-box;
     color: #0f1111;
-    font-family: "Amazon Ember", sans-serif;
     font-size: 13px;
     line-height: 20px;
     padding: 0 10px 0 11px;
     margin: 3px;
+    width: 800px;
+    height: auto;
 }
 
-message author {
-    color: forestgreen;
+author {
+    color: blue;
     font-weight: bold;
     display: block;
     padding: 5px;
@@ -136,6 +114,9 @@ message content {
     display: block;
     padding: 5px;
     grid-column: 2/3;
+    width: 450px;
+    height: auto;
+    overflow-wrap: break-word;
 }
 
 .replies reply {
@@ -145,14 +126,6 @@ message content {
     border-bottom: 1px solid lightgray;
 }
 
-.replies reply author {
-    color: forestgreen;
-    font-weight: bold;
-    display: block;
-    padding: 5px;
-    grid-column: 1/2;
-}
-
 .replies reply content {
     display: block;
     padding: 5px;
@@ -160,12 +133,13 @@ message content {
 }
 
 replyCount {
-    color: limegreen;
+    color: blue;
 }
 
 .replyHref {
-    color: darkblue;
+    color: black;
     margin-left: 10px;
+    border-style: dotted;
 }
 
 a {
@@ -174,21 +148,23 @@ a {
 
 .existedChannelHrefs {
     background-color: gainsboro;
-    box-shadow: rgba(213, 217, 217, .5) 0 2px 5px 0;
     box-sizing: border-box;
-    color: #0f1111;
-    font-family: "Amazon Ember", sans-serif;
+    color: black;
     font-size: 22px;
     line-height: 15px;
     display: flex;
     flex-direction: row;
     padding: 20px;
     margin: auto auto auto 1px;
+    border: none;
+    font-family: 'Kumbh Sans', sans-serif, serif;
 }
 
-hero .create_channel {
-    margin-bottom: 50px;
-    margin-top: 30px;
+.create_channel {
+    background-color: white;
+    padding: 30px;
+    margin-right: 25px;
+    border-style: dashed;
 }
 
 channelInfo {
@@ -199,15 +175,32 @@ channelInfo {
     margin-top: 20px;
 }
 
-/*channelInfo a {*/
-/*    display: grid;*/
-/*    !*grid-column: 1/2;*!*/
-/*}*/
-
 channelInfo unreadCount {
     margin-left: 20px;
     margin-top: 20px;
     margin-right: 10px;
+}
+
+.post_message {
+    margin-top: 0;
+    margin-bottom: 30px;
+}
+
+#existed_channel_rooms {
+    margin-top: 30px;
+}
+
+img {
+    width: 200px;
+    height: auto;
+    margin-bottom: 10px;
+    margin-left: 500px;
+}
+
+.imgContainer {
+    column-count: 1;
+    grid-row: 3;
+    float: right;
 }
 
 

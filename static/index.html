@@ -10,19 +10,17 @@
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <script src="/static/script.js"></script>
 </head>
+
 <body>
-
-<div class="channel_header"></div>
-
-<div class="container">
-
     <hero>
         <h1>Belay</h1>
     </hero>
 
+    <div class="channel_header"></div>
+
     <div class="auth">
         <h2>Welcome to Belay!</h2>
-        <p>Log in or create new account</p>
+        <p>Log in or create a new account</p>
         <label for="username">Username</label><br><input id="username">
         <br>
         <label for="password">Password</label><br><input id="password">
@@ -40,13 +38,12 @@
                     <div id="existed_channel_rooms"></div>
                 </div>
                 <div class="comment_box">
-                    <div>
+                    <div class="post_message">
                         <label for="post_content"></label><input id="post_content" name="comment"/>
                         <button id="post" type="submit" value="Post">Post</button>
                     </div>
                     <div class="messages"></div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -61,7 +58,5 @@
         <div class="replies">
         </div>
     </div>
-
-</div>
 </body>
 </html>
