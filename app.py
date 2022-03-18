@@ -1,9 +1,15 @@
 import uuid
 import sqlite3
 from flask import Flask, request, jsonify, g
+import bcrypt
+import configparser
 
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+config = configparser.ConfigParser()
+config.read('secrets.cfg')
+PEPPER = config['secrets']['PEPPER']
 
 
 @app.route('/')
@@ -39,7 +45,7 @@ def is_valid_account(username, auth_key):
 @app.route('/api/auth', methods=['POST'])
 def auth():
     username = request.headers['username']
-    password = request.headers['password']
+    password = (request.headers['password'] + PEPPER).encode(('utf-8'))
 
     g.db = connect_db()
     cur = g.db.execute(
@@ -49,7 +55,7 @@ def auth():
     data = cur.fetchall()
     cur.close()
 
-    if data and data[0][2] == password:
+    if data and bcrypt.checkpw(password, data[0][2]):
         return jsonify({"result": "success",
                         "auth_key": data[0][1]})
 
@@ -57,9 +63,10 @@ def auth():
         return jsonify({"result": "username exists"})
 
     new_auth_key = uuid.uuid1().hex
+    hashed = bcrypt.hashpw(password, bcrypt.gensalt())
     cur = g.db.execute(
         "insert into user (username, auth_key, password) values (?, ?, ?)",
-        [username, new_auth_key, password]
+        [username, new_auth_key, hashed]
     )
     g.db.commit()
     cur.close()
