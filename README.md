@@ -41,7 +41,10 @@
 - Each message shows the author and the number of replies, if any.
 - You can reply a message by clicking the "reply" button inside the messagse.
 
-![reply](./demo/reply.png)
+![image recognition](./demo/image_recog.png)
+- If a message contains valid image urls, the images will be displayed at the bottom right corner of the message.
+
+- ![reply](./demo/reply.png)
 
 - After hitting "reply" button, you will be redirected to a reply page, where the original message is displayed above
   the reply box, and the existed replies displayed below the reply box in reverse chronological order. That is, with the
