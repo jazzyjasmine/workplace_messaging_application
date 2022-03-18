@@ -59,6 +59,9 @@ def auth():
         return jsonify({"result": "success",
                         "auth_key": data[0][1]})
 
+    if data and not bcrypt.checkpw(password, data[0][2]):
+        return jsonify({"result": "wrong password"})
+
     if data:
         return jsonify({"result": "username exists"})
 

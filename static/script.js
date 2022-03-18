@@ -120,7 +120,12 @@ async function auth(push_history, channel_id) {
                 await loadCreateChannelPage(push_history);
             }
         } else {
-            alert("Username already exists!");
+            if (result === "wrong password") {
+                alert("Wrong password");
+            } else {
+                alert("Username already exists!");
+            }
+            return false;
         }
 
     } catch (error) {
