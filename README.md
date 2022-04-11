@@ -1,13 +1,13 @@
 # Belay: User Handbook
 
-### Start Belay
+## Start Belay
 
 1. Navigate to the "workplace_messaging_application" directory.
 2. run ```sqlite3 ./db/belay.db < ./db/20220311T015900_create_tables.sql``` to initialize database.
 3. Make sure flask and bcrypt are installed. If not, run ```pip3 install flask``` and ```pip3 install bcrypt``` to install them.
 4. Run ```flask run``` to start belay.
 
-### New User Log in
+## New User Log in
 
 ![auth page](./demo/auth.png)
 
@@ -16,7 +16,7 @@
   account with existed username.
 - Once you successfully logged in or created a new account, you will see all the existed channles.
 
-### Channels
+## Channels
 
 ![create page](./demo/create_channal.png)
 
@@ -44,7 +44,8 @@
 ![image recognition](./demo/image_recog.png)
 - If a message contains valid image urls, the images will be displayed at the bottom right corner of the message.
 
-- ![reply](./demo/reply.png)
+## Replies
+![reply](./demo/reply.png)
 
 - After hitting "reply" button, you will be redirected to a reply page, where the original message is displayed above
   the reply box, and the existed replies displayed below the reply box in reverse chronological order. That is, with the
